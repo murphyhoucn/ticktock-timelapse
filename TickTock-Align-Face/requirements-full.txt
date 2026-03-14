@@ -1,0 +1,4 @@
+# 完整依赖 - 包含dlib高精度版本
+numpy>=1.21.0
+opencv-python>=4.5.0
+dlib>=19.22.0

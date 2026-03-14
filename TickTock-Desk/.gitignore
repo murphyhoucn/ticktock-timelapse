@@ -1,0 +1,7 @@
+__pycache__/
+*.jpg
+*.png
+*.mp4
+
+aligned_photos/
+photos/

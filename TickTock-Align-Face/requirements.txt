@@ -1,0 +1,14 @@
+# TickTock Face Alignment Tool - 依赖包
+# 
+# 安装方法：
+# 基础版本（仅OpenCV）：pip install -r requirements-minimal.txt
+# 完整版本（包含dlib）：pip install -r requirements.txt
+# 开发版本：pip install -r requirements-dev.txt
+
+# 核心依赖
+numpy>=1.21.0
+opencv-python>=4.5.0
+
+# dlib支持（高精度人脸对齐）
+# 如果安装失败，可以使用预编译版本或跳过使用OpenCV版本
+dlib>=19.22.0
