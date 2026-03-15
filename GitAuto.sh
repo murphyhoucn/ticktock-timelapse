@@ -23,8 +23,8 @@ if git diff-index --quiet HEAD --; then
     echo "No changes to commit."
 else
     echo "Running git commit..."
-    # 优雅融合：[Auto] 用户名 on 设备名 @ 时间
-    git commit -m "[Auto] $git_user on $server_name @ $short_time"
+    # 优雅融合：[Auto] 用户名@设备名 | 时间
+    git commit -m "[Auto] $git_user@$server_name | $short_time"
 
     echo "Running git push..."
     git push

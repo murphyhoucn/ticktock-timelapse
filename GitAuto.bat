@@ -21,8 +21,8 @@ if %errorlevel% equ 0 (
     echo No changes to commit.
 ) else (
     echo Running git commit...
-    :: 优雅融合：[Auto] 用户名 on 设备名 @ 时间
-    git commit -m "[Auto] %GITHUB_USER% on %COMPUTERNAME% @ %SHORT_TIME%"
+    :: 优雅融合：[Auto] 用户名@设备名 | 时间
+    git commit -m "[Auto] %GITHUB_USER%@%COMPUTERNAME% | %SHORT_TIME%"
     echo Running git push...
     git push
 )
