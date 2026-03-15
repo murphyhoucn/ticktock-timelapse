@@ -1,30 +1,24 @@
-
 #!/bin/bash
 
+# 获取主机名作为设备名
 server_name=$(hostname)
 
-# 设置commit消息中的起始标记
-START_TAG="[Auto Commit]"
+# 调整时间格式为: YYYY-MM-DD HH:MM (例如 2026-03-14 23:09)
+short_time=$(date "+%Y-%m-%d %H:%M")
 
-current_time=$(date "+%Y_%m_%d__%H_%M_%S")
-
-# 执行git status
 echo "Running git status..."
 git status
 
-# 执行git add .
 echo "Running git add..."
 git add .
 
-# 检查是否有更改需要提交
 if git diff-index --quiet HEAD --; then
     echo "No changes to commit."
 else
-    # 执行git commit
     echo "Running git commit..."
-    git commit -m "$START_TAG $current_time {From $server_name}"
+    # 优雅拼接: [Auto] 设备名 @ 时间
+    git commit -m "[Auto] $server_name @ $short_time"
 
-    # 执行git push
     echo "Running git push..."
     git push
 fi

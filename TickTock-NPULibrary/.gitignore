@@ -1,9 +1,0 @@
-__pycache__/
-
-NPU-*/
-debug_output/
-
-*.jpg
-*.mp4
-*.log
-*.ckpt
