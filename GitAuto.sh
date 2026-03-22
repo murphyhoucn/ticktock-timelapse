@@ -11,7 +11,20 @@ fi
 
 # 调整时间格式为: YYYY-MM-DD HH:MM
 short_time=$(date "+%Y-%m-%d %H:%M")
-
+# 解析命令行参数
+NO_DESC=false
+while getopts "n" opt; do
+    case $opt in
+        n)
+            NO_DESC=true
+            ;;
+        \?)
+            echo "Usage: $0 [-n]"
+            echo "  -n  Skip description input (commit with subject only)"
+            exit 1
+            ;;
+    esac
+done
 echo "Running git status..."
 git status
 
@@ -23,8 +36,29 @@ if git diff-index --quiet HEAD --; then
     echo "No changes to commit."
 else
     echo "Running git commit..."
-    # 优雅融合：[Auto] 用户名@设备名 | 时间
-    git commit -m "[Auto] $git_user@$server_name | $short_time"
+    
+    # 构建 commit message
+    SUBJECT="[Auto] $git_user@$server_name | $short_time"
+    
+    if [ "$NO_DESC" = true ]; then
+        # -n 模式：直接使用subject，不询问description
+        echo "Committing with subject only (-n mode)..."
+        git commit -m "$SUBJECT"
+    else
+        # 交互模式：询问是否添加 description
+        echo "Enter description (press Enter to skip):"
+        read -r DESCRIPTION
+        
+        if [ -z "$DESCRIPTION" ]; then
+            # 用户直接回车，只有subject
+            echo "Committing with subject only..."
+            git commit -m "$SUBJECT"
+        else
+            # 用户输入了 description，使用多行commit message
+            echo "Committing with description..."
+            git commit -m "$SUBJECT" -m "$DESCRIPTION"
+        fi
+    fi
 
     echo "Running git push..."
     git push
