@@ -21,7 +21,7 @@ def resize_image(input_path, output_path, target_size=(4096, 3072)):
             
             # 如果已经是目标尺寸，直接复制
             if original_size == target_size:
-                img.save(output_path, quality=95, optimize=True)
+                img.save(output_path, quality=100, optimize=True)
                 print(f"✅ 尺寸已符合要求，直接复制")
                 return True
             
@@ -29,7 +29,7 @@ def resize_image(input_path, output_path, target_size=(4096, 3072)):
             resized_img = img.resize(target_size, Image.Resampling.LANCZOS)
             
             # 保存放缩后的图片
-            resized_img.save(output_path, quality=95, optimize=True)
+            resized_img.save(output_path, quality=100, optimize=True)
             print(f"✅ 放缩完成: {original_size[0]}x{original_size[1]} → {target_size[0]}x{target_size[1]}")
             return True
             

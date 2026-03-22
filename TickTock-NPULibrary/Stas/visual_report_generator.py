@@ -453,10 +453,10 @@ class NPUPhotoAnalyzer:
         photo_rate = (photo_days / total_days) * 100 if total_days > 0 else 0
         avg_photos = total_photos / photo_days if photo_days > 0 else 0
         
-        title = f"NPU每日拍照记录 - GitHub风格提交图\n"
+        title = f"NPU每日记录\n"
         title += f"统计期间: {start_date.strftime('%Y-%m-%d')} 至 {end_date.strftime('%Y-%m-%d')}\n"
         title += f"总天数: {total_days} | 拍照天数: {photo_days} | 未拍天数: {no_photo_days} | "
-        title += f"总照片: {total_photos}张 | 拍照率: {photo_rate:.1f}% | 平均每日: {avg_photos:.1f}张"
+        title += f"总照片: {total_photos}张 | 拍照率: {photo_rate:.1f}%"
         
         plt.suptitle(title, fontsize=14, fontfamily=CHINESE_FONT, y=0.95)
         

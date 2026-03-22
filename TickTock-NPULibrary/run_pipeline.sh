@@ -49,8 +49,8 @@ fi
 
 echo
 echo "请选择处理模式:"
-echo "1. 快速测试 (NPU-Everyday-Sample) - 快速测试"
-echo "2. 完整处理 (NPU-Everyday)"
+echo "1. ⭐ 快速测试 (NPU-Everyday-Sample) - 快速测试"
+echo "2. ⭐ 完整处理 (NPU-Everyday)"
 echo "3. 仅图像放缩"
 echo "4. 仅图像对齐"
 echo "5. 仅延时摄影"

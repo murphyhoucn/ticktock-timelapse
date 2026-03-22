@@ -27,7 +27,7 @@ from Align.main_align import MainAlign
 from Timelapse.create_timelapse import create_file_list, create_timelapse_video
 from Stas.visual_report_generator import generate_npu_statistics_reports
 from PIL import Image
-
+from Timelapse.utils import preprocess_add_timestamp
 
 # 配置日志
 logging.basicConfig(
@@ -218,6 +218,8 @@ class TickTockPipeline:
             if align_files:
                 source_dir = self.align_dir
                 logger.info(f"使用对齐后的图像: {len(align_files)} 个文件（按时间顺序）")
+                print(f"加 时间 水印, source_dir = {source_dir}")
+                source_dir = preprocess_add_timestamp(source_dir)
         
         # 如果对齐目录没有文件，检查放缩后的图像
         if source_dir is None and 'resize' in self.steps and self.rescale_dir.exists():
@@ -595,6 +597,6 @@ def main():
     # 创建并运行流水线
     pipeline = TickTockPipeline(args.input_dir, steps=args.steps, align_method=args.align_method)
     pipeline.run_pipeline()
-
+    
 if __name__ == "__main__":
     main()
