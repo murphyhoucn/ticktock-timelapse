@@ -321,12 +321,12 @@ class TickTockPipeline:
             
             for name, resolution, quality, desc in video_configs:
                 output_video = self.timelapse_dir / f"timelapse_{name}.mp4"
-                logger.info(f"生成{desc} (30fps, {resolution}): {output_video.name}")
+                logger.info(f"生成{desc} (24fps, {resolution}): {output_video.name}")
                 
                 create_timelapse_video(
                     str(file_list_path),
                     str(output_video),
-                    framerate=30,
+                    framerate=24,
                     quality=quality,
                     resolution=resolution
                 )

@@ -52,19 +52,22 @@ def create_file_list():
         os.unlink(temp_file.name)
         return None, None
 
-def create_timelapse_video(file_list_path, output_name, framerate=30, quality=18, resolution="1920x1080"):
-    """使用文件列表方式创建延时视频"""
+def create_timelapse_video(file_list_path, output_name, framerate=24, quality=18, resolution="1920x1080"):
     
+    w, h = resolution.split('x')
+
     cmd = [
-        'ffmpeg', '-y',  # 覆盖输出文件
-        '-f', 'concat',  # 使用concat格式
-        '-safe', '0',    # 允许相对路径
-        '-i', file_list_path,  # 文件列表
-        '-r', str(framerate),  # 输出帧率
-        '-c:v', 'libx264',     # 视频编码器
-        '-crf', str(quality),  # 质量参数
-        '-pix_fmt', 'yuv420p', # 像素格式
-        '-vf', f'scale={resolution}',  # 设置分辨率
+        'ffmpeg', '-y',
+        '-f', 'concat',
+        '-safe', '0',
+        '-i', file_list_path,
+        '-r', str(framerate),
+        '-c:v', 'libx264',
+        '-crf', str(quality),
+        '-pix_fmt', 'yuv420p',
+        '-vf', f'scale={w}:{h}:flags=lanczos,format=yuv420p',  # ← 修复花屏
+        '-x264-params', 'colorprim=bt709:transfer=bt709:colormatrix=bt709',
+        '-movflags', '+faststart',
         output_name
     ]
     
