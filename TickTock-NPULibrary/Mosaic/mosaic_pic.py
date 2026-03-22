@@ -332,7 +332,7 @@ class MosaicGenerator:
                 y, mo, d, t = int(m.group(1)), int(m.group(2)), int(m.group(3)), m.group(4)
                 key = date(y, mo, d)
                 # 同一天多张：保留时间戳更大的
-                if key not in date_to_file or t > pattern.search(date_to_file[key].name).group(4):
+                if key not in date_to_file or t < pattern.search(date_to_file[key].name).group(4):
                     date_to_file[key] = f
             except ValueError:
                 continue
