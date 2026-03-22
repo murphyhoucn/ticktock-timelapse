@@ -313,22 +313,27 @@ class TickTockPipeline:
             logger.info(f"   预览质量: {prev_resolution} (CRF 28)")
             
             # 生成三种质量的视频（统一使用30fps）
+            # video_configs = [
+            #     ("preview", prev_resolution, 28, "预览版"),
+            #     ("standard", std_resolution, 23, "标准版"), 
+            #     ("hq", hq_resolution, 18, "高质量版")
+            # ]
             video_configs = [
-                ("preview", prev_resolution, 28, "预览版"),
-                ("standard", std_resolution, 23, "标准版"), 
-                ("hq", hq_resolution, 18, "高质量版")
+                ("preview",  prev_resolution, 28, "分享版", "libx264"),  # 小文件，兼容性最好
+                ("standard", std_resolution,  23, "标准版", "libx265"),  # 平衡
+                ("hq",        hq_resolution,  18, "存档版", "libx265"),  # 最高质量本地存档
             ]
-            
-            for name, resolution, quality, desc in video_configs:
+            framerate = 12
+            for name, resolution, quality, desc, codec in video_configs:
                 output_video = self.timelapse_dir / f"timelapse_{name}.mp4"
-                logger.info(f"生成{desc} (24fps, {resolution}): {output_video.name}")
-                
+                logger.info(f"生成{desc} ({framerate}fps, {resolution}, {codec}): {output_video.name}")  # ← 加上 codec 信息
                 create_timelapse_video(
                     str(file_list_path),
                     str(output_video),
-                    framerate=24,
+                    framerate=framerate,
                     quality=quality,
-                    resolution=resolution
+                    resolution=resolution,
+                    codec=codec,
                 )
             
             logger.info("✅ 步骤3完成: 延时摄影")

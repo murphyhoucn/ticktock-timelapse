@@ -52,21 +52,21 @@ def create_file_list():
         os.unlink(temp_file.name)
         return None, None
 
-def create_timelapse_video(file_list_path, output_name, framerate=24, quality=18, resolution="1920x1080"):
-    
+def create_timelapse_video(file_list_path, output_name, framerate=24, 
+                            quality=18, resolution="1920x1080", codec="libx264"):
     w, h = resolution.split('x')
 
     cmd = [
         'ffmpeg', '-y',
         '-f', 'concat',
         '-safe', '0',
+        '-r', str(framerate),   # ← 输入帧率，加在 -i 前面
         '-i', file_list_path,
-        '-r', str(framerate),
-        '-c:v', 'libx264',
+        '-r', str(framerate),   # ← 输出帧率，加在 -i 后面
+        '-c:v', codec,
         '-crf', str(quality),
-        '-pix_fmt', 'yuv420p',
-        '-vf', f'scale={w}:{h}:flags=lanczos,format=yuv420p',  # ← 修复花屏
-        '-x264-params', 'colorprim=bt709:transfer=bt709:colormatrix=bt709',
+        '-vf', f'scale={w}:{h}:flags=lanczos,format=yuv420p',
+        '-tag:v', 'hvc1' if codec == 'libx265' else 'avc1',
         '-movflags', '+faststart',
         output_name
     ]
