@@ -439,7 +439,7 @@ class TickTockPipeline:
                 results = generate_npu_statistics_reports(
                     base_directory=str(self.input_dir),
                     start_date="2023-09-01",
-                    end_date="2026-04-30",
+                    end_date="2026-03-31",
                     output_dir=str(self.stats_dir)
                 )
                 

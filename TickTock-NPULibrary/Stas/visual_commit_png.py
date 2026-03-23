@@ -101,7 +101,7 @@ def generate_date_range(start_date, end_date):
     
     return dates
 
-def generate_github_style_commit_png(photo_stats, start_date_str="2023-09-01", end_date_str="2026-04-30"):
+def generate_github_style_commit_png(photo_stats, start_date_str="2023-09-01", end_date_str="2026-03-31"):
     """
     生成GitHub风格的提交图PNG
     """
@@ -181,7 +181,8 @@ def generate_github_style_commit_png(photo_stats, start_date_str="2023-09-01", e
             ax.add_patch(rect)
     
     # 添加星期标签
-    weekday_labels = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+    # weekday_labels = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+    weekday_labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
     for i, label in enumerate(weekday_labels):
         ax.text(-30, (6 - i) * (cell_size + cell_gap) + cell_size/2, label, 
                 ha='right', va='center', fontsize=10, fontfamily='SimHei')
@@ -214,11 +215,16 @@ def generate_github_style_commit_png(photo_stats, start_date_str="2023-09-01", e
     photo_rate = (photo_days / total_days) * 100 if total_days > 0 else 0
     avg_photos = total_photos / photo_days if photo_days > 0 else 0
     
-    title = f"NPU每日记录\n"
-    title += f"统计期间: {start_date_str} 至 {end_date_str}\n"
-    title += f"总天数: {total_days} | 拍照天数: {photo_days} | 未拍天数: {no_photo_days} | "
-    title += f"总照片: {total_photos}张 | 拍照率: {photo_rate:.1f}%"
+    # title = f"NPU Everyday\n"
+    # title += f"统计期间: {start_date_str} 至 {end_date_str}\n"
+    # title += f"总天数: {total_days} | 拍照天数: {photo_days} | 未拍天数: {no_photo_days} | "
+    # title += f"总照片: {total_photos}张 | 拍照率: {photo_rate:.1f}%"
     
+    title = f"NPU Everyday\n"
+    title += f"Period: {start_date_str} to {end_date_str}\n"
+    title += f"Total Days: {total_days} | Photo Days: {photo_days} | No-Photo Days: {no_photo_days} | "
+    title += f"Total Photos: {total_photos} | Photo Rate: {photo_rate:.1f}%"
+
     plt.suptitle(title, fontsize=14, fontfamily='SimHei', y=0.95)
     
     # 添加图例

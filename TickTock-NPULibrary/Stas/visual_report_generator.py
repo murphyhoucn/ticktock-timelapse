@@ -419,7 +419,8 @@ class NPUPhotoAnalyzer:
                 ax.add_patch(rect)
         
         # 添加星期标签
-        weekday_labels = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+        # weekday_labels = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+        weekday_labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
         for i, label in enumerate(weekday_labels):
             ax.text(-30, (6 - i) * (cell_size + cell_gap) + cell_size/2, label, 
                     ha='right', va='center', fontsize=10, fontfamily=CHINESE_FONT)
@@ -432,7 +433,7 @@ class NPUPhotoAnalyzer:
             week_start = adjusted_start + timedelta(weeks=week_idx)
             if week_start.month != current_month and week_start >= start_date:
                 current_month = week_start.month
-                month_label = f"{week_start.year}年{week_start.month:02d}月"
+                month_label = f"{week_start.year}-{week_start.month:02d}"
                 x_pos = week_idx * (cell_size + cell_gap)
                 ax.text(x_pos, 7 * (cell_size + cell_gap) + 5, month_label, 
                         ha='left', va='bottom', fontsize=9, fontfamily=CHINESE_FONT, rotation=45)
@@ -453,11 +454,11 @@ class NPUPhotoAnalyzer:
         photo_rate = (photo_days / total_days) * 100 if total_days > 0 else 0
         avg_photos = total_photos / photo_days if photo_days > 0 else 0
         
-        title = f"NPU每日记录\n"
-        title += f"统计期间: {start_date.strftime('%Y-%m-%d')} 至 {end_date.strftime('%Y-%m-%d')}\n"
-        title += f"总天数: {total_days} | 拍照天数: {photo_days} | 未拍天数: {no_photo_days} | "
-        title += f"总照片: {total_photos}张 | 拍照率: {photo_rate:.1f}%"
-        
+        title = f"NPU Everyday\n"
+        title += f"Period: {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}\n"
+        title += f"Total Days: {total_days} | Photo Days: {photo_days} | No-Photo Days: {no_photo_days} | "
+        title += f"Total Photos: {total_photos} | Photo Rate: {photo_rate:.1f}%"
+
         plt.suptitle(title, fontsize=14, fontfamily=CHINESE_FONT, y=0.95)
         
         # 添加图例
@@ -470,9 +471,14 @@ class NPUPhotoAnalyzer:
         ]
         
         # 创建图例，使用英文避免字体问题
-        legend = ax.legend(handles=legend_elements, loc='upper right', bbox_to_anchor=(1, 1), 
-                           fontsize=10, frameon=True, fancybox=True, shadow=True)
+        # legend = ax.legend(handles=legend_elements, loc='upper right', bbox_to_anchor=(1, 1), 
+        #                    fontsize=10, frameon=True, fancybox=True, shadow=True)
         
+        # 修改 bbox_to_anchor 的 x 坐标为 1.02 (稍微向右偏移)
+        # 修改 loc 为 'upper left'，这样图例的左上角会锚定在 (1.02, 1) 的位置
+        legend = ax.legend(handles=legend_elements, loc='upper left', bbox_to_anchor=(1.02, 1), 
+                        fontsize=10, frameon=True, fancybox=True, shadow=True)
+
         plt.tight_layout()
         
         # 保存PNG文件
@@ -482,7 +488,7 @@ class NPUPhotoAnalyzer:
         
         return output_path
     
-    def generate_complete_reports(self, start_date_str="2023-09-01", end_date_str="2026-04-30", output_dir=None):
+    def generate_complete_reports(self, start_date_str="2023-09-01", end_date_str="2026-03-31", output_dir=None):
         """
         生成完整的统计报告（Markdown + PNG）
         
