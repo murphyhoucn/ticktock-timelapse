@@ -302,6 +302,10 @@ class MosaicGenerator:
             logger.info("生成日历马赛克...")
             self.generate_calendar_mosaic(image_files)
 
+            # 6. 生成日历马赛克样式二（四年全览）
+            logger.info("生成日历马赛克（样式二）...")
+            self.generate_calendar_mosaic_v2(image_files)
+
             # 生成信息报告
             self.generate_info_report(image_files, rows, cols, cell_width, cell_height)
 
@@ -310,6 +314,237 @@ class MosaicGenerator:
         except Exception as e:
             logger.error(f"生成马赛克失败: {e}")
             return False
+
+    def generate_calendar_mosaic_v2(self, image_files):
+            """
+            样式二：四年全览日历马赛克，横向排布。
+            布局：4行（年）× 12列（月），不足的年份月份位置留空。
+            同时生成亮色和深色两个主题。
+            最左侧显示 'NPU Everyday @ {year}'，旋转90°竖排。
+            """
+
+            # ── 1. 解析日期，每天取第一张 ────────────────────────────────────────
+            pattern = re.compile(r'IMG_(\d{4})(\d{2})(\d{2})_(\d{6})')
+            date_to_file = {}
+
+            for f in image_files:
+                m = pattern.search(f.name)
+                if not m:
+                    continue
+                try:
+                    y, mo, d, t = int(m.group(1)), int(m.group(2)), int(m.group(3)), m.group(4)
+                    key = date(y, mo, d)
+                    if key not in date_to_file or t < pattern.search(date_to_file[key].name).group(4):
+                        date_to_file[key] = f
+                except ValueError:
+                    continue
+
+            if not date_to_file:
+                logger.error("没有解析到任何有效日期的图像")
+                return False
+
+            # ── 2. 年份与有效月份定义 ─────────────────────────────────────────────
+            year_active_months = {
+                2023: range(9,  13),
+                2024: range(1,  13),
+                2025: range(1,  13),
+                2026: range(1,   4),
+            }
+            YEARS  = [2023, 2024, 2025, 2026]
+
+            # ── 3. 双主题定义 ─────────────────────────────────────────────────────
+            THEMES = {
+                "light": {
+                    "BG_COLOR":      (245, 245, 245),
+                    "BORDER_COLOR":  (200, 200, 200),
+                    "EMPTY_COLOR":   (225, 225, 225),
+                    "BLANK_COLOR":   (235, 235, 235),
+                    "TEXT_COLOR":    (80,  80,  80 ),
+                    "TITLE_COLOR":   (30,  30,  30 ),
+                    "MONTH_COLOR":   (40,  40,  40 ),
+                    "YEAR_COLOR":    (50,  50,  50 ),
+                    "WEEKDAY_COLOR": (90,  90,  90 ),
+                    "SUNDAY_COLOR":  (180, 50,  50 ),
+                },
+                "dark": {
+                    "BG_COLOR":      (20,  20,  20 ),
+                    "BORDER_COLOR":  (60,  60,  60 ),
+                    "EMPTY_COLOR":   (35,  35,  35 ),
+                    "BLANK_COLOR":   (28,  28,  28 ),
+                    "TEXT_COLOR":    (200, 200, 200),
+                    "TITLE_COLOR":   (240, 240, 240),
+                    "MONTH_COLOR":   (200, 200, 200),
+                    "YEAR_COLOR":    (220, 220, 220),
+                    "WEEKDAY_COLOR": (140, 140, 140),
+                    "SUNDAY_COLOR":  (180, 100, 100),
+                },
+            }
+
+            # ── 4. 布局参数 ───────────────────────────────────────────────────────
+            CELL_W        = 320
+            CELL_H        = 240
+            GAP           = 3
+            BORDER        = 1
+            DAY_LABEL_H   = 44
+            WEEKDAY_H     = 60
+            MONTH_H       = 80
+            YEAR_W        = 260
+            MONTH_GAP     = 6
+            MAX_WEEKS     = 6
+
+            WEEKDAYS_EN = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+            MONTHS_EN   = [
+                'January', 'February', 'March', 'April', 'May', 'June',
+                'July', 'August', 'September', 'October', 'November', 'December'
+            ]
+
+            # ── 5. 字体 ───────────────────────────────────────────────────────────
+            font_paths_bold = [
+                "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+                "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
+            ]
+            font_paths_regular = [
+                "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+                "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+            ]
+
+            def load_font(paths, size):
+                for p in paths:
+                    try:
+                        return ImageFont.truetype(p, size)
+                    except Exception:
+                        continue
+                return ImageFont.load_default()
+
+            font_month   = load_font(font_paths_bold,    44)
+            font_year    = load_font(font_paths_bold,    64)
+            font_weekday = load_font(font_paths_bold,    32)
+            font_day     = load_font(font_paths_regular, 32)
+
+            # ── 6. 辅助函数 ───────────────────────────────────────────────────────
+            MONTH_BLOCK_H = MONTH_H + WEEKDAY_H + MAX_WEEKS * (CELL_H + GAP)
+            MONTH_BLOCK_W = 7 * (CELL_W + GAP) - GAP
+
+            canvas_w = YEAR_W + GAP + 12 * MONTH_BLOCK_W + 11 * MONTH_GAP + GAP
+            canvas_h = GAP + len(YEARS) * MONTH_BLOCK_H + (len(YEARS) - 1) * MONTH_GAP + GAP
+
+            logger.info(f"样式二日历画布尺寸: {canvas_w}×{canvas_h} px")
+
+            # ── 7. 逐主题生成 ────────────────────────────────────────────────────
+            for theme_name, theme in THEMES.items():
+                logger.info(f"生成四年全览日历马赛克（{theme_name}）...")
+
+                canvas = Image.new('RGB', (canvas_w, canvas_h), theme["BG_COLOR"])
+                draw   = ImageDraw.Draw(canvas)
+
+                for year_idx, year in enumerate(YEARS):
+                    active_months = set(year_active_months[year])
+
+                    row_y = GAP + year_idx * (MONTH_BLOCK_H + MONTH_GAP)
+
+                    # ── 年份标签：整行文字旋转90°竖排 ────────────────────────
+                    year_str = f"NPU Everyday @ {year}"
+
+                    bbox   = draw.textbbox((0, 0), year_str, font=font_year)
+                    text_w = bbox[2] - bbox[0]
+                    text_h = bbox[3] - bbox[1]
+
+                    # 透明临时画布
+                    tmp      = Image.new('RGBA', (text_w + 20, text_h + 20), (0, 0, 0, 0))
+                    tmp_draw = ImageDraw.Draw(tmp)
+                    tmp_draw.text((10, 10), year_str, fill=theme["YEAR_COLOR"], font=font_year)
+
+                    # 顺时针旋转90°
+                    tmp = tmp.rotate(-90, expand=True)
+
+                    # 贴到画布，水平+垂直居中在 YEAR_W 内
+                    paste_x = (YEAR_W - tmp.width)  // 2
+                    paste_y = row_y + (MONTH_BLOCK_H - tmp.height) // 2
+                    canvas.paste(tmp, (paste_x, paste_y), mask=tmp)
+
+                    # ── 逐月绘制 ──────────────────────────────────────────────
+                    for month in range(1, 13):
+                        col_idx = month - 1
+                        block_x = YEAR_W + GAP + col_idx * (MONTH_BLOCK_W + MONTH_GAP)
+                        block_y = row_y
+
+                        if month not in active_months:
+                            # 无效月份：整块填充空白色
+                            draw.rectangle(
+                                [block_x, block_y,
+                                block_x + MONTH_BLOCK_W, block_y + MONTH_BLOCK_H],
+                                fill=theme["BLANK_COLOR"]
+                            )
+                            continue
+
+                        # 月份标题
+                        month_label = MONTHS_EN[month - 1]
+                        bbox = draw.textbbox((0, 0), month_label, font=font_month)
+                        tx = block_x + (MONTH_BLOCK_W - (bbox[2] - bbox[0])) // 2
+                        ty = block_y + (MONTH_H - (bbox[3] - bbox[1])) // 2
+                        draw.text((tx, ty), month_label, fill=theme["MONTH_COLOR"], font=font_month)
+
+                        # 星期标题行
+                        wd_y = block_y + MONTH_H
+                        for c, wd in enumerate(WEEKDAYS_EN):
+                            x     = block_x + c * (CELL_W + GAP)
+                            color = theme["SUNDAY_COLOR"] if c == 6 else theme["WEEKDAY_COLOR"]
+                            bbox  = draw.textbbox((0, 0), wd, font=font_weekday)
+                            tx    = x + (CELL_W - (bbox[2] - bbox[0])) // 2
+                            ty    = wd_y + (WEEKDAY_H - (bbox[3] - bbox[1])) // 2
+                            draw.text((tx, ty), wd, fill=color, font=font_weekday)
+
+                        # 日期格子
+                        days_in_month = calendar.monthrange(year, month)[1]
+                        first_weekday = date(year, month, 1).weekday()
+                        cell_start_y  = block_y + MONTH_H + WEEKDAY_H
+
+                        for day in range(1, days_in_month + 1):
+                            slot  = first_weekday + day - 1
+                            r_idx = slot // 7
+                            c_idx = slot % 7
+
+                            x = block_x + c_idx * (CELL_W + GAP)
+                            y = cell_start_y + r_idx * (CELL_H + GAP)
+
+                            img_path = date_to_file.get(date(year, month, day))
+
+                            if img_path:
+                                try:
+                                    with Image.open(img_path) as img:
+                                        inner_w = CELL_W - BORDER * 2
+                                        inner_h = CELL_H - BORDER * 2 - DAY_LABEL_H
+                                        resized = self.resize_image_fit(img, inner_w, inner_h)
+                                        canvas.paste(resized, (x + BORDER, y + BORDER + DAY_LABEL_H))
+                                except Exception as e:
+                                    logger.warning(f"贴图失败 {img_path.name}: {e}")
+                                    draw.rectangle([x, y, x + CELL_W, y + CELL_H],
+                                                fill=theme["EMPTY_COLOR"])
+                            else:
+                                draw.rectangle([x, y, x + CELL_W, y + CELL_H],
+                                            fill=theme["EMPTY_COLOR"])
+
+                            # 边框
+                            if BORDER > 0:
+                                draw.rectangle(
+                                    [x, y, x + CELL_W - 1, y + CELL_H - 1],
+                                    outline=theme["BORDER_COLOR"], width=BORDER
+                                )
+
+                            # 日期数字
+                            is_sunday = (c_idx == 6)
+                            day_color = theme["SUNDAY_COLOR"] if is_sunday else theme["TEXT_COLOR"]
+                            draw.text((x + 6, y + 4), str(day), fill=day_color, font=font_day)
+
+                # ── 保存 ──────────────────────────────────────────────────────
+                out_path = self.output_dir / f"calendar_mosaic_overview_{theme_name}.jpg"
+                canvas.save(out_path, "JPEG", quality=92, optimize=True)
+                logger.info(
+                    f"四年全览日历马赛克（{theme_name}）已保存: {out_path} "
+                    f"({canvas.width}×{canvas.height}px)"
+                )
+
+            return True
 
     def generate_calendar_mosaic(self, image_files):
         """
@@ -528,6 +763,10 @@ class MosaicGenerator:
                 )
 
         return True
+
+
+
+
 
     def generate_info_report(self, image_files, rows, cols, cell_width, cell_height):
         """生成马赛克信息报告"""
