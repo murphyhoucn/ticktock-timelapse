@@ -1,18 +1,7 @@
-# Silent PowerShell wrapper for TimeLapse - completely hidden execution
-# This script runs completely silently in the background
-
-# Execute the batch file silently
-$batPath = Join-Path $PSScriptRoot "run_timelapse.bat"
-
-# Start the process completely hidden
-$processInfo = New-Object System.Diagnostics.ProcessStartInfo
-$processInfo.FileName = "cmd.exe"
-$processInfo.Arguments = "/c `"$batPath`""
-$processInfo.UseShellExecute = $false
-$processInfo.CreateNoWindow = $true
-$processInfo.WindowStyle = [System.Diagnostics.ProcessWindowStyle]::Hidden
-
-$process = [System.Diagnostics.Process]::Start($processInfo)
-$process.WaitForExit()
-
-# Script completes silently - no output or windows
+# Transitional shim: the Windows scheduled task still points to this file.
+# After running update_task.bat (switches the task to pythonw directly,
+# fully windowless), this file can be deleted.
+# NOTE: Start-Process is required for GUI executables; "&" would let the
+# parent exit immediately and take pythonw down with it.
+$script = Join-Path $PSScriptRoot "capture_once.py"
+Start-Process -FilePath "D:\DevEnv\miniconda3\envs\dev\pythonw.exe" -ArgumentList ('"' + $script + '"') -WorkingDirectory $PSScriptRoot -Wait

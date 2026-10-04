@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.pyc
+
+# 运行时状态与日志
+logs/
+unlock_count.txt
+.camera_test_state*
+
+# 测试产物
+camera_test_*.jpg
+
+# 大文件（视频由用户自行决定是否入库）
+# timelapse_*.mp4
